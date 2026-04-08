@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Запускаем три параллельные машины
+        # Запускаем три параллельные машины: Windows, Mac и Linux
         os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
@@ -29,19 +29,23 @@ jobs:
         if: runner.os != 'Windows'
 
       - name: Build Fat JAR
-        run: ./gradlew fatJar # Та самая задача, которую мы писали в build.gradle
+        run: ./gradlew fatJar
 
       - name: Package with jpackage
         shell: bash
         run: |
-          # Создаем папку для вывода
           mkdir dist
+          JAR_NAME=$(ls build/libs/ | grep "all.jar" | head -n 1)
           
-          # Запускаем стандартную утилиту упаковки
+          echo "Found JAR: $JAR_NAME"
+          if [ -z "$JAR_NAME" ]; then
+            echo "Error: Could not find Fat JAR in build/libs/"
+            exit 1
+          fi
           jpackage \
             --input build/libs \
             --name "MonkeAdventures" \
-            --main-jar MonkeAdventures-all.jar \
+            --main-jar "$JAR_NAME" \
             --main-class ru.nsu.ccfit.alarkhipov.monkeadventures.Main \
             --dest dist \
             --vendor "Alarkhipov" \
