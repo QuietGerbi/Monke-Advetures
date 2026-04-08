@@ -21,4 +21,5 @@ KOHTA YAMAMOTO,
 TheFatRat,
 Yi Jian Mei,
 Kevin MacLeod,
-Jamie Christopherson
+Jamie Christopherson,
+Lind Erebos
