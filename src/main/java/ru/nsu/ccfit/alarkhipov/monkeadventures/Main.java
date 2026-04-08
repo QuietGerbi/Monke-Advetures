@@ -5,7 +5,7 @@ import ru.nsu.ccfit.alarkhipov.monkeadventures.controller.swing.MainMenuControll
 import javax.swing.*;
 
 public class Main{
-    static void main(String[] args){
+    public static void main(String[] args){
         MainMenuController menuController = new MainMenuController();
 
     }
