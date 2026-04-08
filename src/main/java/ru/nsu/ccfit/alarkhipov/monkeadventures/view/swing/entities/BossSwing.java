@@ -10,8 +10,8 @@ public class BossSwing extends EnemySwing {
     private final int size;
 
     public BossSwing(int size) {
-        this.size = size;
         super(size);
+        this.size = size;
         loadBossImage();
     }
     public void loadBossImage(){
