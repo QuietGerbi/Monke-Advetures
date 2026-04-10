@@ -24,41 +24,50 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Grant execute permission
+      - name: Grant execute permission for Linux/macOS
         if: runner.os != 'Windows'
         run: chmod +x gradlew
 
       - name: Build Fat JAR
-        # На Windows сам запуск через ./gradlew может тупить в обычном shell
-        run: ./gradlew fatJar --stacktrace
-
-      - name: Package with jpackage (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
+        # Правильный вызов скрипта в зависимости от ОС
+        shell: bash
         run: |
-          New-Item -ItemType Directory -Force -Path dist
-          $jarFile = Get-ChildItem -Path build/libs/*.jar | Where-Object { $_.Name -like "*all.jar" } | Select-Object -First 1
-          if (-not $jarFile) { throw "JAR not found!" }
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            ./gradlew.bat fatJar --stacktrace
+          else
+            ./gradlew fatJar --stacktrace
+          fi
+
+      - name: Prepare jpackage input (Isolate JAR)
+        # Копируем ТОЛЬКО fat jar в чистую папку
+        shell: bash
+        run: |
+          mkdir -p jpackage-input
           
-          jpackage `
-            --type exe `
-            --input build/libs `
-            --name "MonkeAdventures" `
-            --main-jar $($jarFile.Name) `
-            --main-class ru.nsu.ccfit.alarkhipov.monkeadventures.Main `
-            --dest dist `
-            --vendor "Alarkhipov" `
-            --app-version "1.0.0" `
-            --win-shortcut `
-            --win-menu
+          # Ищем файл. Если fatJar делает файл с "all" (как плагин shadow), берем его. 
+          # Если нет - берем любой первый JAR.
+          find build/libs -type f -name "*all.jar" -exec cp {} jpackage-input/ \; || find build/libs -type f -name "*.jar" -exec cp {} jpackage-input/ \;
+          
+          ls -la jpackage-input/
 
-      - name: Package with jpackage (Unix)
-        if: runner.os != 'Windows'
+      - name: Package with jpackage
+        shell: bash
         run: |
+          JAR_NAME=$(ls jpackage-input | head -n 1)
+          echo "Isolating JAR: $JAR_NAME"
+          
+          if [ -z "$JAR_NAME" ]; then
+            echo "КРИТИЧЕСКАЯ ОШИБКА: JAR файл не найден! Проверь, собирает ли Gradle артефакт."
+            exit 1
+          fi
+
           mkdir -p dist
-          JAR_NAME=$(basename $(ls build/libs/*all.jar | head -n 1))
+
+          # type app-image - собирает папку с бинарником (например, .exe для винды). 
+          # Это работает безотказно и не требует WiX Toolset.
           jpackage \
-            --input build/libs \
+            --type app-image \
+            --input jpackage-input \
             --name "MonkeAdventures" \
             --main-jar "$JAR_NAME" \
             --main-class ru.nsu.ccfit.alarkhipov.monkeadventures.Main \
@@ -71,3 +80,5 @@ jobs:
         with:
           name: MonkeAdventures-${{ matrix.os }}
           path: dist/
+
+          
