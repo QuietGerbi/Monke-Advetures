@@ -2,15 +2,17 @@ name: Build Monke Adventures
 
 on:
   push:
-    branches: [ "main", "master" ] # Запускать при пуше в эти ветки
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
 
 jobs:
   build:
     name: Build for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false # Чтобы падение на одной ОС не отменяло остальные
       matrix:
-        # Запускаем три параллельные машины: Windows, Mac и Linux
         os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
@@ -24,24 +26,37 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      # WiX Toolset нужен jpackage только на Windows для создания exe/msi
+      - name: Install WiX (Windows only)
+        if: runner.os == 'Windows'
+        run: dotnet tool install --global WiX
+
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
         if: runner.os != 'Windows'
+        run: chmod +x gradlew
 
       - name: Build Fat JAR
+        # Используем shell: bash везде для единообразия вызова gradlew
+        shell: bash
         run: ./gradlew fatJar
 
       - name: Package with jpackage
         shell: bash
         run: |
-          mkdir dist
-          JAR_NAME=$(ls build/libs/ | grep "all.jar" | head -n 1)
+          mkdir -p dist
+          # Ищем JAR, заканчивающийся на all.jar
+          JAR_PATH=$(find build/libs -name "*all.jar" | head -n 1)
           
-          echo "Found JAR: $JAR_NAME"
-          if [ -z "$JAR_NAME" ]; then
+          if [ -z "$JAR_PATH" ]; then
             echo "Error: Could not find Fat JAR in build/libs/"
+            ls -R build/libs/ # Дамп содержимого для отладки, если не нашел
             exit 1
           fi
+          
+          JAR_NAME=$(basename "$JAR_PATH")
+          echo "Found JAR: $JAR_NAME"
+
+          # Базовая команда jpackage
           jpackage \
             --input build/libs \
             --name "MonkeAdventures" \
@@ -49,11 +64,11 @@ jobs:
             --main-class ru.nsu.ccfit.alarkhipov.monkeadventures.Main \
             --dest dist \
             --vendor "Alarkhipov" \
-            --app-version "1.0.0"
+            --app-version "1.0.0" \
+            --verbose
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MonkeAdventures-${{ matrix.os }}
           path: dist/
-
