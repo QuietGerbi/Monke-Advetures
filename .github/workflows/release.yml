@@ -3,6 +3,7 @@ name: Build Monke Adventures
 on:
   push:
     branches: [ "main", "master" ]
+  workflow_dispatch: # Позволяет запускать сборку вручную
 
 jobs:
   build:
@@ -29,7 +30,6 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Fat JAR
-        # Правильный вызов скрипта в зависимости от ОС
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
@@ -39,32 +39,28 @@ jobs:
           fi
 
       - name: Prepare jpackage input (Isolate JAR)
-        # Копируем ТОЛЬКО fat jar в чистую папку
         shell: bash
         run: |
           mkdir -p jpackage-input
-          
-          # Ищем файл. Если fatJar делает файл с "all" (как плагин shadow), берем его. 
-          # Если нет - берем любой первый JAR.
+          # Ищем fat jar (обычно содержит 'all' в названии) и копируем его в чистую папку
           find build/libs -type f -name "*all.jar" -exec cp {} jpackage-input/ \; || find build/libs -type f -name "*.jar" -exec cp {} jpackage-input/ \;
-          
+          echo "Содержимое папки для jpackage:"
           ls -la jpackage-input/
 
       - name: Package with jpackage
         shell: bash
         run: |
           JAR_NAME=$(ls jpackage-input | head -n 1)
-          echo "Isolating JAR: $JAR_NAME"
+          echo "Using JAR: $JAR_NAME"
           
           if [ -z "$JAR_NAME" ]; then
-            echo "КРИТИЧЕСКАЯ ОШИБКА: JAR файл не найден! Проверь, собирает ли Gradle артефакт."
+            echo "Ошибка: JAR не найден!"
             exit 1
           fi
 
           mkdir -p dist
 
-          # type app-image - собирает папку с бинарником (например, .exe для винды). 
-          # Это работает безотказно и не требует WiX Toolset.
+          # Параметр --java-options "-Dfile.encoding=UTF-8" лечит кракозябры
           jpackage \
             --type app-image \
             --input jpackage-input \
@@ -73,13 +69,12 @@ jobs:
             --main-class ru.nsu.ccfit.alarkhipov.monkeadventures.Main \
             --dest dist \
             --vendor "Alarkhipov" \
-            --app-version "1.0.0"
-            --java-options "-Dfile.encoding=UTF-8"
+            --app-version "1.0.0" \
+            --java-options "-Dfile.encoding=UTF-8" \
+            --verbose
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: MonkeAdventures-${{ matrix.os }}
           path: dist/
-
-          
