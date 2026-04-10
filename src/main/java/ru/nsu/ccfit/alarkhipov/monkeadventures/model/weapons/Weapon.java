@@ -26,6 +26,9 @@ public abstract class Weapon {
     public int getDamage() { return damage; }
     public float getRadius() { return radius; }
     public double getCooldown() { return cooldown; }
+    public void setRadius(float radius) {
+        this.radius = radius;
+    }
     public long getLastAttackTime() { return lastAttackTime; }
 
     protected boolean isReady() {

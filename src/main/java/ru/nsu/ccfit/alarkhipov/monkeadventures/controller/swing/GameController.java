@@ -7,6 +7,7 @@ import ru.nsu.ccfit.alarkhipov.monkeadventures.music.SoundPad;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.entities.BossSwing;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.entities.EnemySwing;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.game.GameView;
+import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.game.MapDecorationsSwing;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.game.WorldSwing;
 
 import javax.swing.*;
@@ -15,6 +16,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GameController implements KeyListener {
 
@@ -29,10 +31,13 @@ public class GameController implements KeyListener {
 
     private boolean movingUp, movingDown, movingLeft, movingRight;
     private volatile boolean isRunning = true;
+
     private int enemyBaseHP = 100;
+    private int enemyMaxHP=enemyBaseHP;
     private int enemyBaseDamage = 3;
-    private final int HPPerWave = 150;
-    private final int damagePerWave = 5;
+    private final int HPPerWave = 130;
+    private final int damagePerWave = 7;
+    private int kills = 0;
     private boolean bossSpawned = false;
     private boolean bossPhase = false;
     private Enemy boss = null;
@@ -147,7 +152,7 @@ public class GameController implements KeyListener {
             enemyScreenPositions.add(new Point(screenX, screenY));
 
             enemyHPs.add(enemy.getCurHP());
-            enemyMaxHPs.add(100);
+            enemyMaxHPs.add(enemy.getMaxHP());
         }
 
         world.updateExpInfo(player.getCurrentExp(), player.getExpToNextLevel());
@@ -165,8 +170,9 @@ public class GameController implements KeyListener {
         });
         spawnTimer.start();
 
-        Timer difficultyTimer = new Timer(180000, e -> {
+        Timer difficultyTimer = new Timer(210000, e -> {
             enemyBaseHP += HPPerWave;
+            enemyMaxHP += HPPerWave;
             enemyBaseDamage += damagePerWave;
             if (spawnInterval > 400) {
                 spawnInterval -= 400;
@@ -195,7 +201,18 @@ public class GameController implements KeyListener {
         float spawnY = player.getY() + (float) (Math.sin(angle) * spawnDistance);
 
         Enemy enemy = new Enemy(spawnX, spawnY);
+        double rand = Math.random();
+
+        if (rand < 0.5) {
+            enemy.setType(Enemy.WalkType.NORMAL);
+        } else if (rand < 0.85) {
+            enemy.setType(Enemy.WalkType.ZIGZAG);
+        } else {
+            enemy.setType(Enemy.WalkType.CHARGE);
+        }
+
         enemy.setCurHP(enemyBaseHP);
+        enemy.setMaxHP(enemyMaxHP);
         enemy.setDamage(enemyBaseDamage);
         EnemySwing enemyView = new EnemySwing(150);
 
@@ -224,11 +241,15 @@ public class GameController implements KeyListener {
         float spawnY = player.getY() + (float) Math.sin(angle) * distance;
 
         boss = new Enemy(spawnX, spawnY);
+        boss.setType(Enemy.WalkType.NORMAL);
         boss.setCurHP(50000);
+        boss.setMaxHP(50000);
         boss.setDamage(20);
         boss.setSpeed(1.0f);
         boss.setHitboxRadius(300);
         boss.setExperienceValue(10000);
+
+        player.getWeapon().setRadius(550);
 
         BossSwing bossView = new BossSwing(600);
 
@@ -245,9 +266,11 @@ public class GameController implements KeyListener {
             Enemy enemy = enemies.get(i);
             if (enemy.isDead()) {
                 player.addExperience(enemy.getExperienceValue());
+                kills++;
 
                 if (enemy == boss) {
                     isRunning = false;
+                    kills++;
                     handleBossDeath();
                 }
 
@@ -295,6 +318,7 @@ public class GameController implements KeyListener {
     }
 
     private void handlePlayerDeath() {
+        soundPad.stopAll();
         SwingUtilities.invokeLater(() -> {
             long elapsedSeconds = (System.currentTimeMillis() - gameStartTime) / 1000;
             ScoreManager sm = new ScoreManager();
@@ -302,7 +326,8 @@ public class GameController implements KeyListener {
 
             String message = "Вы погибли!\n\n" +
                     "Ваш уровень: " + player.getLevel() + "\n" +
-                    "Время выживания: " + getGameTimeString();
+                    "Время выживания: " + getGameTimeString() + "\n" +
+                    "Вы убили: " + kills  + " бибизян\n";
 
             JOptionPane.showMessageDialog(view.getFrame(),
                     message,
@@ -327,7 +352,8 @@ public class GameController implements KeyListener {
             String message = "Победа!\n\n" +
                     "Вы победили босса!\n" +
                     "Ваш финальный уровень: " + player.getLevel() + "\n" +
-                    "Время игры: " + getGameTimeString();
+                    "Время игры: " + getGameTimeString() + "\n" +
+                    "Вы убили: " + kills  + " бибизян\n";
 
             JOptionPane.showMessageDialog(view.getFrame(),
                     message,
@@ -339,6 +365,7 @@ public class GameController implements KeyListener {
     }
 
     private void restartGame() {
+        this.isRunning = false;
         SwingUtilities.invokeLater(() -> {
             view.getFrame().dispose();
             new GameController(view.getFrame());
@@ -362,6 +389,23 @@ public class GameController implements KeyListener {
         return String.format("%02d:%02d", minutes, seconds);
     }
 
+    public int getEnemyBaseHP() {
+        return enemyBaseHP;
+    }
+
+    public void setEnemyBaseHP(int enemyBaseHP) {
+        this.enemyBaseHP = enemyBaseHP;
+    }
+
+    public int getEnemyMaxHP() {
+        return enemyMaxHP;
+    }
+
+    public void setEnemyMaxHP(int enemyMaxHP) {
+        this.enemyMaxHP = enemyMaxHP;
+    }
+
+
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
@@ -377,6 +421,14 @@ public class GameController implements KeyListener {
             case KeyEvent.VK_M -> {
                 soundPad.toggleMute();
             }
+
+            case KeyEvent.VK_PERIOD -> {
+                soundPad.nextTrack();
+            }
+            case KeyEvent.VK_COMMA -> {
+                soundPad.previousTrack();
+            }
+
             case KeyEvent.VK_ESCAPE -> {
                 returnToMainMenu();
             }

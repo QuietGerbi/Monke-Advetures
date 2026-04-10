@@ -21,31 +21,18 @@ public class Player extends Observable<ArrayList<Float>> implements Entity {
     private float x, y = 0f;
     private final float hitboxRadius = 50f;
 
-    private int kills=0;
-    private float timeAlive=0f;
-
     private final Weapon weapon = new MagicStaff();
 
-    private final float worldWidth = 10000f;
-    private final float worldHeight = 10000f;
+    private final float worldWidth = 30000f;
+    private final float worldHeight = 30000f;
 
     @Override
     public void setPosition(float newX, float newY){
         this.x = newX;
         this.y = newY;
 
-        if (this.x < -worldWidth/2) {
-            this.x += worldWidth;
-        }
-        if (this.x > worldWidth/2) {
-            this.x -= worldWidth;
-        }
-        if (this.y < -worldHeight/2) {
-            this.y += worldHeight;
-        }
-        if (this.y > worldHeight/2) {
-            this.y -= worldHeight;
-        }
+        this.x = Math.max(-worldWidth/2, Math.min(worldWidth/2, this.x));
+        this.y = Math.max(-worldHeight/2, Math.min(worldHeight/2, this.y));
 
         update(this);
     }
@@ -71,7 +58,7 @@ public class Player extends Observable<ArrayList<Float>> implements Entity {
         level++;
         expToNextLevel = (int)(expToNextLevel * 1.35);
 
-        weapon.setDamage(weapon.getDamage() + 4);
+        weapon.setDamage(weapon.getDamage() + 10);
 
         maxHP += 25;
         curHP = maxHP;
@@ -163,22 +150,6 @@ public class Player extends Observable<ArrayList<Float>> implements Entity {
 
     public void setCurSpeed(float curSpeed) {
         this.curSpeed = curSpeed;
-    }
-
-    public int getKills() {
-        return kills;
-    }
-
-    public void setKills(Integer kills) {
-        this.kills = kills;
-    }
-
-    public float getTimeAlive() {
-        return timeAlive;
-    }
-
-    public void setTimeAlive(float timeAlive) {
-        this.timeAlive = timeAlive;
     }
 
     public Weapon getWeapon() {

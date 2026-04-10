@@ -12,6 +12,8 @@ public class EnemySwing extends JPanel {
     private final Image enemyImage;
     private final int size;
     List<String> enemyTypes;
+    private boolean isDying = false;
+    private long deathStartTime = 0;
 
     public EnemySwing(int size) {
         this.size = size;
@@ -39,11 +41,23 @@ public class EnemySwing extends JPanel {
         setDoubleBuffered(true);
     }
 
+    public void startDeathAnimation() {
+        isDying = true;
+        deathStartTime = System.currentTimeMillis();
+        repaint();
+    }
+
+    public boolean isDying() {
+        return isDying;
+    }
+
     @Override
     protected void paintComponent(Graphics graphics) {
         super.paintComponent(graphics);
 
-        if (enemyImage == null) return;
+        if (enemyImage == null) {
+            return;
+        }
 
         Graphics2D g2d = (Graphics2D) graphics;
         int drawX = (getWidth() - size) / 2;

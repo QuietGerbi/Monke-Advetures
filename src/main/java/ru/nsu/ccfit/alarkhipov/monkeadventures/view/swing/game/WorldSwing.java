@@ -12,8 +12,12 @@ import java.util.Objects;
 public class WorldSwing extends JPanel {
     private PlayerSwing playerSwing;
     private final List<EnemySwing> enemySwings = new ArrayList<>();
+    private final List<MapDecorationsSwing> decorations = new ArrayList<>();
     private MagicStaffSwing staffSwing;
     private final Image backgroundImage;
+
+    private float cameraX = 0f;
+    private float cameraY = 0f;
 
     private int currHP;
     private int maxHP;
@@ -32,7 +36,7 @@ public class WorldSwing extends JPanel {
         setOpaque(true);
         setDoubleBuffered(true);
         ImageIcon icon = new ImageIcon(Objects.requireNonNull(
-                getClass().getResource("/backgrounds/grass.png")));
+                getClass().getResource("/backgrounds/grassTile.png")));
         backgroundImage = icon.getImage();
     }
 
@@ -60,6 +64,9 @@ public class WorldSwing extends JPanel {
 
 
     public void update(float playerWorldX, float playerWorldY) {
+        this.cameraX = playerWorldX;
+        this.cameraY = playerWorldY;
+
         if (playerSwing != null) {
             int centerX = (getWidth() - playerSwing.getWidth()) / 2;
             int centerY = (getHeight() - playerSwing.getHeight()) / 2;
@@ -91,9 +98,12 @@ public class WorldSwing extends JPanel {
     }
 
     public void removeEnemySwing(EnemySwing enemySwing) {
-        enemySwings.remove(enemySwing);
-        remove(enemySwing);
-        repaint();
+        if (enemySwing != null && enemySwings.contains(enemySwing)) {
+            remove(enemySwing);
+            enemySwings.remove(enemySwing);
+            revalidate();
+            repaint();
+        }
     }
 
     public void updateGameTime(long elapsedSeconds) {
@@ -169,45 +179,47 @@ public class WorldSwing extends JPanel {
 
     }
 
-    public void paintEnemiesHPInfo(Graphics2D g2d){
-        if (enemySwings != null && enemyCurrHPs != null && enemyMaxHPs != null) {
-            for (int i = 0; i < enemySwings.size() && i < enemyCurrHPs.size() && i < enemyMaxHPs.size(); i++) {
-                EnemySwing enemyView = enemySwings.get(i);
-                int curHP = enemyCurrHPs.get(i);
-                int maxHP = enemyMaxHPs.get(i);
+    public void paintEnemiesHPInfo(Graphics2D g2d) {
+        if (enemySwings == null || enemyCurrHPs == null || enemyMaxHPs == null) {
+            return;
+        }
 
-                if (maxHP <= 0) continue;
+        for (int i = 0; i < enemySwings.size() && i < enemyCurrHPs.size() && i < enemyMaxHPs.size(); i++) {
+            EnemySwing enemyView = enemySwings.get(i);
+            int curHP = enemyCurrHPs.get(i);
+            int maxHP = enemyMaxHPs.get(i);
 
-                int ex = enemyView.getX();
-                int ey = enemyView.getY();
-                int eWidth = enemyView.getWidth();
+            if (maxHP <= 0) continue;
 
-                int barWidth = (maxHP > 500) ? 500 : 100;
-                int barHeight = 10;
-                int barX = ex + (eWidth - barWidth) / 2;
-                int barY = ey - 15;
+            int ex = enemyView.getX();
+            int ey = enemyView.getY();
+            int eWidth = enemyView.getWidth();
 
-                float hpPercent = Math.max(0, Math.min(1, (float) curHP / maxHP));
-                int currentWidth = (int) (barWidth * hpPercent);
+            int barWidth = (maxHP > 200) ? 170 : 100;
+            int barHeight = 11;
+            int barX = ex + (eWidth - barWidth) / 2;
+            int barY = ey - 20;
 
-                g2d.setColor(new Color(40, 40, 40, 220));
-                g2d.fillRect(barX, barY, barWidth, barHeight);
+            g2d.setColor(new Color(30, 30, 30, 220));
+            g2d.fillRect(barX, barY, barWidth, barHeight);
 
-                Color hpColor = hpPercent > 0.6f ? new Color(0, 220, 0) :
-                        hpPercent > 0.3f ? new Color(255, 190, 0) :
-                                new Color(200, 0, 0);
-                g2d.setColor(hpColor);
-                g2d.fillRect(barX, barY, currentWidth, barHeight);
+            float hpPercent = Math.max(0, Math.min(1.0f, (float) curHP / maxHP));
+            int currentWidth = (int) (barWidth * hpPercent);
 
-                g2d.setColor(Color.WHITE);
-                g2d.drawRect(barX, barY, barWidth, barHeight);
+            Color hpColor = hpPercent > 0.55f ? new Color(0, 210, 0) :
+                    hpPercent > 0.25f ? new Color(255, 180, 0) :
+                            new Color(200, 0, 0);
 
-                if (maxHP > 200) {
-                    g2d.setFont(new Font("Arial", Font.BOLD, 12));
-                    String text = curHP + " / " + maxHP;
-                    g2d.drawString(text, barX, barY - 5);
-                }
-            }
+            g2d.setColor(hpColor);
+            g2d.fillRect(barX, barY, currentWidth, barHeight);
+
+            g2d.setColor(new Color(220, 220, 220));
+            g2d.drawRect(barX, barY, barWidth, barHeight);
+
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(new Font("Arial", Font.BOLD, 14));
+            String text = curHP + " / " + maxHP;
+            g2d.drawString(text, barX + 4, barY - 8);
         }
     }
 
@@ -245,10 +257,20 @@ public class WorldSwing extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
-        if (backgroundImage != null) {
-            g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-        }
 
+        if (backgroundImage != null) {
+            int tileW = backgroundImage.getWidth(null);
+            int tileH = backgroundImage.getHeight(null);
+
+            int startX = (int) (-cameraX % tileW);
+            int startY = (int) (-cameraY % tileH);
+
+            for (int x = startX - tileW; x < getWidth() + tileW; x += tileW) {
+                for (int y = startY - tileH; y < getHeight() + tileH; y += tileH) {
+                    g2d.drawImage(backgroundImage, x, y, this);
+                }
+            }
+        }
         if (staffSwing != null && staffSwing.isAttacking()) {
             int centerX = (getWidth() - playerSwing.getWidth()) / 2 + playerSwing.getWidth() / 2;
             int centerY = (getHeight() - playerSwing.getHeight()) / 2 + playerSwing.getHeight() / 2;
@@ -262,4 +284,5 @@ public class WorldSwing extends JPanel {
         paintHPInfo(g2d);
         paintXPInfo(g2d);
     }
+
 }

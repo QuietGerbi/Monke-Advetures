@@ -8,7 +8,7 @@ import java.util.List;
 public class MagicStaff extends Weapon {
 
     public MagicStaff() {
-        super("Magic Staff", 25, 240f, 0.8);
+        super("Magic Staff", 25, 315f, 0.8);
     }
 
     @Override
