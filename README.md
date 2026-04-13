@@ -1,4 +1,4 @@
-🐒 Monke Adventures
+                                                ##🐒 Monke Adventures
 <img width="810" height="848" alt="AppIcon" src="https://github.com/user-attachments/assets/5d36a33c-d934-4d15-8433-0b3e9646dd35" />
 
 Monke Adventures — это динамичный 2D-экшен, разработанный на Java с использованием библиотеки Swing. 
