@@ -12,7 +12,7 @@ public class MagicStaffSwing extends JPanel {
 
     private boolean isAttacking = false;
     private long attackStartTime = 0;
-    private final long ATTACK_DURATION = 220;
+    private final long attackDuration = 220;
 
     public MagicStaffSwing(int sizeX, int sizeY) {
         this.sizeX = sizeX;
@@ -36,8 +36,8 @@ public class MagicStaffSwing extends JPanel {
 
         long timePassed = System.currentTimeMillis() - attackStartTime;
 
-        if (timePassed < ATTACK_DURATION) {
-            float progress = (float) timePassed / ATTACK_DURATION;
+        if (timePassed < attackDuration) {
+            float progress = (float) timePassed / attackDuration;
             float alpha = 0.6f * (1 - progress);
 
             g2d.setColor(new Color(1.0f, 0.92f, 0.55f, alpha));

@@ -1,4 +1,6 @@
 package ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.game;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.entities.EnemySwing;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.entities.PlayerSwing;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.weapons.MagicStaffSwing;
@@ -12,24 +14,23 @@ import java.util.Objects;
 public class WorldSwing extends JPanel {
     private PlayerSwing playerSwing;
     private final List<EnemySwing> enemySwings = new ArrayList<>();
-    private final List<MapDecorationsSwing> decorations = new ArrayList<>();
     private MagicStaffSwing staffSwing;
     private final Image backgroundImage;
 
     private float cameraX = 0f;
     private float cameraY = 0f;
 
-    private int currHP;
-    private int maxHP;
+    private int currHPInfo;
+    private int maxHPInfo;
     private List<Integer> enemyCurrHPs = new ArrayList<>();
     private List<Integer> enemyMaxHPs = new ArrayList<>();
 
-    private int currentExp = 0;
-    private int expToNextLevel = 100;
-    private int currentDamage = 25;
+    private int currentExpInfo;
+    private int expToNextLevelInfo;
+    private int currentDamageInfo;
 
     private final long gameStartTime = System.currentTimeMillis();
-    private long elapsedSeconds = 0;
+    private long elapsedSeconds;
 
     public WorldSwing() {
         setLayout(null);
@@ -58,21 +59,9 @@ public class WorldSwing extends JPanel {
         staffSwing.setSize(staffSwing.getPreferredSize());
     }
 
-    public MagicStaffSwing getStaffSwing() {
-        return staffSwing;
-    }
-
-
     public void update(float playerWorldX, float playerWorldY) {
         this.cameraX = playerWorldX;
         this.cameraY = playerWorldY;
-
-        if (playerSwing != null) {
-            int centerX = (getWidth() - playerSwing.getWidth()) / 2;
-            int centerY = (getHeight() - playerSwing.getHeight()) / 2;
-            playerSwing.setLocation(centerX, centerY);
-            playerSwing.repaint();
-        }
 
         if (staffSwing != null && playerSwing != null) {
             int playerCenterX = (getWidth() - playerSwing.getWidth()) / 2;
@@ -80,6 +69,8 @@ public class WorldSwing extends JPanel {
             int staffX = playerCenterX + playerSwing.getWidth() / 2 + 30;
             int staffY = playerCenterY + playerSwing.getHeight() / 2 - 120;
 
+            playerSwing.setLocation(playerCenterX, playerCenterY);
+            playerSwing.repaint();
             staffSwing.setLocation(staffX, staffY);
         }
         repaint();
@@ -112,8 +103,8 @@ public class WorldSwing extends JPanel {
     }
 
     public void updateHPInfo(int currentHP, int maxHP) {
-        this.currHP = currentHP;
-        this.maxHP = maxHP;
+        this.currHPInfo = currentHP;
+        this.maxHPInfo = maxHP;
         repaint();
     }
 
@@ -124,13 +115,13 @@ public class WorldSwing extends JPanel {
     }
 
     public void updateExpInfo(int currentExp, int expToNextLevel) {
-        this.currentExp = currentExp;
-        this.expToNextLevel = expToNextLevel;
+        this.currentExpInfo = currentExp;
+        this.expToNextLevelInfo = expToNextLevel;
         repaint();
     }
 
     public void updateDamageInfo(int damage) {
-        this.currentDamage = damage;
+        this.currentDamageInfo = damage;
         repaint();
     }
 
@@ -157,7 +148,7 @@ public class WorldSwing extends JPanel {
         g2d.setColor(new Color(50, 50, 50));
         g2d.fillRect(barX, barY, barWidth, barHeight);
 
-        float hpPercent = maxHP > 0 ? (float) currHP / maxHP : 0;
+        float hpPercent = maxHPInfo > 0 ? (float) currHPInfo / maxHPInfo : 0;
         int currentBarWidth = (int) (barWidth * hpPercent);
 
         if (hpPercent > 0.6f) {
@@ -175,7 +166,7 @@ public class WorldSwing extends JPanel {
 
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 16));
-        g2d.drawString("HP: " + currHP + " / " + maxHP, barX + 10, barY + 42);
+        g2d.drawString("HP: " + currHPInfo + " / " + maxHPInfo, barX + 10, barY + 42);
 
     }
 
@@ -195,7 +186,7 @@ public class WorldSwing extends JPanel {
             int ey = enemyView.getY();
             int eWidth = enemyView.getWidth();
 
-            int barWidth = (maxHP > 200) ? 170 : 100;
+            int barWidth = 150;
             int barHeight = 11;
             int barX = ex + (eWidth - barWidth) / 2;
             int barY = ey - 20;
@@ -223,7 +214,7 @@ public class WorldSwing extends JPanel {
         }
     }
 
-    public void paintXPInfo(Graphics2D g2d){
+    public void paintEXPInfo(Graphics2D g2d){
         int expBarX = 30;
         int expBarY = 80;
         int expBarWidth = 300;
@@ -232,7 +223,7 @@ public class WorldSwing extends JPanel {
         g2d.setColor(new Color(40, 40, 70));
         g2d.fillRect(expBarX, expBarY, expBarWidth, expBarHeight);
 
-        float expPercent = expToNextLevel > 0 ? (float) currentExp / expToNextLevel : 0;
+        float expPercent = expToNextLevelInfo > 0 ? (float) currentExpInfo / expToNextLevelInfo : 0;
         int expCurrentWidth = (int) (expBarWidth * expPercent);
 
         g2d.setColor(new Color(0, 140, 255));
@@ -243,14 +234,14 @@ public class WorldSwing extends JPanel {
 
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 15));
-        g2d.drawString("EXP: " + currentExp + " / " + expToNextLevel,
+        g2d.drawString("EXP: " + currentExpInfo + " / " + expToNextLevelInfo,
                 expBarX + 10, expBarY + 32);
     }
 
     public void paintPlayerDamage(Graphics2D g2d){
         g2d.setColor(Color.WHITE);
         g2d.setFont(new Font("Arial", Font.BOLD, 16));
-        g2d.drawString("Урон " + currentDamage, 35, 140);
+        g2d.drawString("Урон " + currentDamageInfo, 35, 140);
     }
 
     @Override
@@ -282,7 +273,7 @@ public class WorldSwing extends JPanel {
         paintTime(g2d);
         paintPlayerDamage(g2d);
         paintHPInfo(g2d);
-        paintXPInfo(g2d);
+        paintEXPInfo(g2d);
     }
 
 }

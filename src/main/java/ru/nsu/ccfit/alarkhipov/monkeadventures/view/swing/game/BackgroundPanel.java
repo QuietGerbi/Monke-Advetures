@@ -8,7 +8,7 @@ public class BackgroundPanel extends JPanel {
     private final Image background;
 
     public BackgroundPanel() {
-        background = new ImageIcon(Objects.requireNonNull(getClass().getResource("/backgrounds/menuBackground.jpg"))).getImage();
+        background = new ImageIcon(Objects.requireNonNull(getClass().getResource("/backgrounds/menuBackground.png"))).getImage();
         setOpaque(false);
     }
 

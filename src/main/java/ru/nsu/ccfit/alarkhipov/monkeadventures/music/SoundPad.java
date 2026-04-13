@@ -1,6 +1,9 @@
 package ru.nsu.ccfit.alarkhipov.monkeadventures.music;
 
 import javazoom.jl.player.Player;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -9,6 +12,7 @@ import java.util.List;
 
 public class SoundPad {
 
+    private static final Logger log = LogManager.getLogger(SoundPad.class);
     private Player currentPlayer;
     private Thread musicThread;
     private List<String> currentPlaylist = new ArrayList<>();
@@ -44,7 +48,7 @@ public class SoundPad {
                 try {
                     playSingleTrack(trackToPlay);
                 } catch (Exception e) {
-                    //
+                    log.error("Sorry, track hasn't been played");
                 }
                 currentTrackIndex++;
             }

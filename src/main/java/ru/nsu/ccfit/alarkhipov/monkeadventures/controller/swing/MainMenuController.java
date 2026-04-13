@@ -22,7 +22,7 @@ public class MainMenuController {
                 GameController gameController = new GameController(context);
                 break;
             case ABOUT:
-            String message = "<html><body style='width: 300px; padding: 10px;'>" +
+            String message = "<html><body style='width: 400px; padding: 10px;'>" +
                             "<h2 style='color: #2e7d32;'>Monke Adventures</h2>" +
                             "<p>Помогите обезьянке выжить!</p>" +
                             "<p>Бедная бибизянка попала зашла в чужой район и ей нужно победить остальных " +
@@ -32,10 +32,10 @@ public class MainMenuController {
                             "<b>Управление:</b><br>" +
                             "• WASD / Стрелки — Движение<br>" +
                             "• M — Включить/Выключить музыку<br>" +
+                            "• , / . — Следующий/Предыдущий трек<br>" +
                             "• ESC — Выйти в главное меню<br>" +
                             "• B — Вызвать босса (если смелый)<br><br>" +
                             "</body></html>";
-
             JOptionPane.showMessageDialog(context, message, "О проекте", JOptionPane.INFORMATION_MESSAGE);
             break;
             case SCORES:

@@ -6,18 +6,17 @@ import java.util.ArrayList;
 
 
 public class Enemy extends Observable<ArrayList<Float>> implements Entity{
-    private int curHP=100;
-    private int maxHP=100;
-    private float speed=2f;
-    private int damage = 2;
-    private float x, y = 0f;
-    private float hitboxRadius = 40f;
-    private int experienceValue = 50;
-    private WalkType type = WalkType.NORMAL;
-    private float zigzagAngle = 0f;
-    private float chargeTimer = 0f;
-    private boolean isCharging = false;
-    private final long DEATH_DURATION = 450;
+    private int curHP;
+    private int maxHP;
+    private float speed;
+    private int damage;
+    private float x, y;
+    private float hitboxRadius;
+    private int experienceValue;
+    private WalkType type;
+    private float zigzagAngle;
+    private float chargeTimer;
+    private boolean isCharging;
 
     private final float worldWidth = 30000f;
     private final float worldHeight = 300000f;
@@ -28,9 +27,33 @@ public class Enemy extends Observable<ArrayList<Float>> implements Entity{
         CHARGE
     }
 
-    public Enemy(float spawnX, float spawnY) {
+    public Enemy(float spawnX, float spawnY, int curHP, int maxHP, float speed, int damage,
+                 float hitboxRadius, int experienceValue, WalkType type, float zigzagAngle, float chargeTimer,
+                 boolean isCharging) {
         this.x = spawnX;
         this.y = spawnY;
+        this.curHP = curHP;
+        this.maxHP = maxHP;
+        this.speed = speed;
+        this.damage = damage;
+        this.hitboxRadius = hitboxRadius;
+        this.experienceValue = experienceValue;
+        this.type = type;
+        this.zigzagAngle = zigzagAngle;
+        this.chargeTimer = chargeTimer;
+        this.isCharging = isCharging;
+    }
+
+    public Enemy(float spawnX, float spawnY) {
+        this(spawnX, spawnY, 100, 100, 2f,
+                3, 40f, 50, WalkType.NORMAL,
+                0f, 0f, false);
+    }
+
+    public void enemyIncreaseLevel(int HPPerWave, int damagePerWave){
+        this.curHP += HPPerWave;
+        this.maxHP += HPPerWave;
+        this.damage += damagePerWave;
     }
 
     @Override
@@ -71,14 +94,11 @@ public class Enemy extends Observable<ArrayList<Float>> implements Entity{
 
     private void moveZigzag(float dx, float dy, float distance) {
         if (distance > 5) {
-            zigzagAngle += 0.08f;  // скорость покачивания
+            zigzagAngle += 0.08f;
             float zigzagOffset = (float) Math.sin(zigzagAngle) * 1.8f;
 
-            float nx = dx / distance;
-            float ny = dy / distance;
-
-            x += (nx * speed) + (ny * zigzagOffset);
-            y += (ny * speed) - (nx * zigzagOffset);
+            x += ((dx / distance) * speed) + ((dy / distance) * zigzagOffset);
+            y += ((dy / distance) * speed) - ((dx / distance) * zigzagOffset);
         }
     }
 

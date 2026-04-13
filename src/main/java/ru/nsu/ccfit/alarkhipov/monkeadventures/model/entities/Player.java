@@ -8,23 +8,36 @@ import java.util.ArrayList;
 
 public class Player extends Observable<ArrayList<Float>> implements Entity {
 
-    private int maxHP=100;
-    private float maxSpeed=100f;
+    private int maxHP;
+    private float maxSpeed;
+    private int curHP;
+    private float curSpeed;
 
-    private int currentExp = 0;
-    private int expToNextLevel = 100;
-    private int level = 1;
+    private int currentExp;
+    private int expToNextLevel;
+    private int level;
 
-    private int curHP=100;
-    private float curSpeed=5f;
+    private int kills;
 
-    private float x, y = 0f;
-    private final float hitboxRadius = 50f;
+    private final Weapon weapon;
 
-    private final Weapon weapon = new MagicStaff();
-
+    private float x, y;
+    private final float hitboxRadius;
     private final float worldWidth = 30000f;
     private final float worldHeight = 30000f;
+
+    public Player(){
+        this.maxHP = 100;
+        this.maxSpeed = 100f;
+        this.currentExp = 0;
+        this.expToNextLevel = 100;
+        this.level = 1;
+        this.kills = 0;
+        this.curHP = 100;
+        this.curSpeed = 5f;
+        this.hitboxRadius = 50f;
+        this.weapon = new MagicStaff();
+    }
 
     @Override
     public void setPosition(float newX, float newY){
@@ -62,6 +75,18 @@ public class Player extends Observable<ArrayList<Float>> implements Entity {
 
         maxHP += 25;
         curHP = maxHP;
+    }
+
+    public int getKills() {
+        return kills;
+    }
+
+    public void setKills(int kills) {
+        this.kills = kills;
+    }
+
+    public void addKills(){
+        this.kills++;
     }
 
     public void heal(int amount) {

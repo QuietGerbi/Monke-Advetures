@@ -1,5 +1,7 @@
 package ru.nsu.ccfit.alarkhipov.monkeadventures.controller.swing;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.ScoreManager;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.model.entities.Enemy;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.model.entities.Player;
@@ -7,7 +9,6 @@ import ru.nsu.ccfit.alarkhipov.monkeadventures.music.SoundPad;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.entities.BossSwing;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.entities.EnemySwing;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.game.GameView;
-import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.game.MapDecorationsSwing;
 import ru.nsu.ccfit.alarkhipov.monkeadventures.view.swing.game.WorldSwing;
 
 import javax.swing.*;
@@ -16,31 +17,28 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class GameController implements KeyListener {
-
+    private static final Logger log = LogManager.getLogger(GameController.class);
     private final Player player;
     private final GameView view;
     private final WorldSwing world;
 
     private final List<Enemy> enemies = new ArrayList<>();
     private final List<EnemySwing> enemySwings = new ArrayList<>();
-
     private final List<Point> enemyScreenPositions = new ArrayList<>();
 
-    private boolean movingUp, movingDown, movingLeft, movingRight;
-    private volatile boolean isRunning = true;
-
-    private int enemyBaseHP = 100;
-    private int enemyMaxHP=enemyBaseHP;
-    private int enemyBaseDamage = 3;
-    private final int HPPerWave = 130;
-    private final int damagePerWave = 7;
-    private int kills = 0;
     private boolean bossSpawned = false;
-    private boolean bossPhase = false;
     private Enemy boss = null;
+
+    private final int HPPerWave = 100;
+    private final int damagePerWave = 7;
+    private int currentTotalHPBonus = 0;
+    private int currentTotalDamageBonus = 0;
+
+    private boolean movingUp, movingDown, movingLeft, movingRight;
+    private boolean isRunning = true;
+
     private int spawnInterval = 3000;
     private final long gameStartTime = System.currentTimeMillis();
     final SoundPad soundPad = new SoundPad();
@@ -91,18 +89,18 @@ public class GameController implements KeyListener {
                 Toolkit.getDefaultToolkit().sync();
 
                 long timeTaken = System.nanoTime() - startTime;
-                long sleepTime = 16000000 - timeTaken;
+                long sleepTime = 16_000_000 - timeTaken;
 
                 if (sleepTime > 0) {
                     try {
-                        Thread.sleep(sleepTime / 1000000);
+                        Thread.sleep(sleepTime / 1_000_000);
                     } catch (InterruptedException ignored) {
                         Thread.currentThread().interrupt();
+                        log.info("Thread was interrupted");
                     }
                 }
             }
         });
-
         gameThread.start();
     }
 
@@ -138,7 +136,7 @@ public class GameController implements KeyListener {
 
         world.update(playerX, playerY);
 
-        long elapsedSeconds = (System.currentTimeMillis() - gameStartTime) / 1000;
+        long elapsedSeconds = (System.currentTimeMillis() - gameStartTime) / 1_000;
         world.updateGameTime(elapsedSeconds);
 
         enemyScreenPositions.clear();
@@ -164,16 +162,16 @@ public class GameController implements KeyListener {
 
     private void startEnemySpawning() {
         Timer spawnTimer = new Timer(spawnInterval, e -> {
-            if (!bossPhase) {
+            if (!bossSpawned) {
                 spawnEnemy();
             }
         });
         spawnTimer.start();
 
         Timer difficultyTimer = new Timer(210000, e -> {
-            enemyBaseHP += HPPerWave;
-            enemyMaxHP += HPPerWave;
-            enemyBaseDamage += damagePerWave;
+            currentTotalHPBonus += HPPerWave;
+            currentTotalDamageBonus += damagePerWave;
+
             if (spawnInterval > 400) {
                 spawnInterval -= 400;
                 spawnTimer.setDelay(spawnInterval);
@@ -201,6 +199,7 @@ public class GameController implements KeyListener {
         float spawnY = player.getY() + (float) (Math.sin(angle) * spawnDistance);
 
         Enemy enemy = new Enemy(spawnX, spawnY);
+        enemy.enemyIncreaseLevel(currentTotalHPBonus, currentTotalDamageBonus);
         double rand = Math.random();
 
         if (rand < 0.5) {
@@ -211,9 +210,6 @@ public class GameController implements KeyListener {
             enemy.setType(Enemy.WalkType.CHARGE);
         }
 
-        enemy.setCurHP(enemyBaseHP);
-        enemy.setMaxHP(enemyMaxHP);
-        enemy.setDamage(enemyBaseDamage);
         EnemySwing enemyView = new EnemySwing(150);
 
         enemies.add(enemy);
@@ -240,14 +236,9 @@ public class GameController implements KeyListener {
         float spawnX = player.getX() + (float) Math.cos(angle) * distance;
         float spawnY = player.getY() + (float) Math.sin(angle) * distance;
 
-        boss = new Enemy(spawnX, spawnY);
-        boss.setType(Enemy.WalkType.NORMAL);
-        boss.setCurHP(50000);
-        boss.setMaxHP(50000);
-        boss.setDamage(20);
-        boss.setSpeed(1.0f);
-        boss.setHitboxRadius(300);
-        boss.setExperienceValue(10000);
+        boss = new Enemy(spawnX, spawnY, 50_000, 50_000, 1.0f,
+                30, 300, 100_000,
+                Enemy.WalkType.NORMAL, 0f, 0f, false);
 
         player.getWeapon().setRadius(550);
 
@@ -258,7 +249,6 @@ public class GameController implements KeyListener {
         world.addEnemy(bossView);
 
         bossSpawned = true;
-        bossPhase = true;
     }
 
     private void removeDeadEnemies() {
@@ -266,11 +256,11 @@ public class GameController implements KeyListener {
             Enemy enemy = enemies.get(i);
             if (enemy.isDead()) {
                 player.addExperience(enemy.getExperienceValue());
-                kills++;
+                player.addKills();
 
                 if (enemy == boss) {
                     isRunning = false;
-                    kills++;
+                    player.addKills();
                     handleBossDeath();
                 }
 
@@ -327,7 +317,7 @@ public class GameController implements KeyListener {
             String message = "Вы погибли!\n\n" +
                     "Ваш уровень: " + player.getLevel() + "\n" +
                     "Время выживания: " + getGameTimeString() + "\n" +
-                    "Вы убили: " + kills  + " бибизян\n";
+                    "Вы убили: " + player.getKills()  + " бибизян\n";
 
             JOptionPane.showMessageDialog(view.getFrame(),
                     message,
@@ -353,7 +343,7 @@ public class GameController implements KeyListener {
                     "Вы победили босса!\n" +
                     "Ваш финальный уровень: " + player.getLevel() + "\n" +
                     "Время игры: " + getGameTimeString() + "\n" +
-                    "Вы убили: " + kills  + " бибизян\n";
+                    "Вы убили: " + player.getKills()  + " бибизян\n";
 
             JOptionPane.showMessageDialog(view.getFrame(),
                     message,
@@ -368,8 +358,8 @@ public class GameController implements KeyListener {
         this.isRunning = false;
         SwingUtilities.invokeLater(() -> {
             view.getFrame().dispose();
-            new GameController(view.getFrame());
         });
+        new GameController(view.getFrame());
     }
 
     private void returnToMainMenu() {
@@ -387,22 +377,6 @@ public class GameController implements KeyListener {
         int minutes = (int) (totalSeconds / 60);
         int seconds = (int) (totalSeconds % 60);
         return String.format("%02d:%02d", minutes, seconds);
-    }
-
-    public int getEnemyBaseHP() {
-        return enemyBaseHP;
-    }
-
-    public void setEnemyBaseHP(int enemyBaseHP) {
-        this.enemyBaseHP = enemyBaseHP;
-    }
-
-    public int getEnemyMaxHP() {
-        return enemyMaxHP;
-    }
-
-    public void setEnemyMaxHP(int enemyMaxHP) {
-        this.enemyMaxHP = enemyMaxHP;
     }
 
 
