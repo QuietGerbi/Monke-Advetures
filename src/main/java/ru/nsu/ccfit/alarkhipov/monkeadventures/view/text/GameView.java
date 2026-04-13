@@ -51,6 +51,37 @@ public class GameView implements Observer<ArrayList<Float>> {
         this.playerWorldY = context.get(1);
     }
 
+    public void printTitle() {
+        System.out.println("\n");
+        System.out.println(" ╔═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗");
+        System.out.println(" ║                                                                                                                                         ║");
+        System.out.println(" ║  ███╗   ███╗ ██████╗ ███╗   ██╗██╗  ██╗███████╗    █████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗████████╗██╗   ██╗██████╗ ███████╗███████╗ ║");
+        System.out.println(" ║  ████╗ ████║██╔═══██╗████╗  ██║██║ ██╔╝██╔════╝   ██╔══██╗██╔══██╗██║   ██║██╔════╝████╗  ██║╚══██╔══╝██║   ██║██╔══██╗██╔════╝██╔════╝ ║");
+        System.out.println(" ║  ██╔████╔██║██║   ██║██╔██╗ ██║█████╔╝ █████╗     ███████║██║  ██║██║   ██║█████╗  ██╔██╗ ██║   ██║   ██║   ██║██████╔╝█████╗  ███████╗ ║");
+        System.out.println(" ║  ██║╚██╔╝██║██║   ██║██║╚██╗██║██╔═██╗ ██╔══╝     ██╔══██║██║  ██║╚██╗ ██╔╝██╔══╝  ██║╚██╗██║   ██║   ██║   ██║██╔══██╗██╔══╝  ╚════██║ ║");
+        System.out.println(" ║  ██║ ╚═╝ ██║╚██████╔╝██║ ╚████║██║  ██╗███████╗   ██║  ██║██████╔╝ ╚████╔╝ ███████╗██║ ╚████║   ██║   ╚██████╔╝██║  ██║███████╗███████║ ║");
+        System.out.println(" ║  ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝   ╚═╝  ╚═╝╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═══╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝ ║");
+        System.out.println(" ║                                                                                                                                         ║");
+        System.out.println(" ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝");
+        System.out.println("\n");
+
+        System.out.println("                                                          MONKE ADVENTURES");
+        System.out.println("                                    Помоги бедной бибизянке выжить и вернуться домой к семье!\n");
+
+        System.out.println("   " + "═".repeat(134));
+        System.out.println("                                                       УПРАВЛЕНИЕ И КОМАНДЫ:");
+        System.out.println("   " + "═".repeat(134));
+        System.out.println("      [ W, A, S, D ]      — Движение обезьянки");
+        System.out.println("      [ B ]               — Вызвать Monke Boss (если ты достаточно смелый)");
+        System.out.println("      [ Q ]               — Выход из игры");
+        System.out.println();
+        System.out.println("      Введите в консоль:");
+        System.out.println("      about               — Об игре");
+        System.out.println("      scores              — Рекорд времени выживания");
+        System.out.println("   " + "═".repeat(134));
+        System.out.println();
+    }
+
     public void updateEnemyPositions(List<Point> enemyScreenPositions) {
         this.EnemyScreenPositions = new ArrayList<>(enemyScreenPositions);
     }

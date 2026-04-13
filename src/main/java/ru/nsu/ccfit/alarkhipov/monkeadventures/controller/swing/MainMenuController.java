@@ -19,13 +19,13 @@ public class MainMenuController {
                 System.exit(0);
             case START:
                 context.dispose();
-                GameController gameController = new GameController(context);
+                new GameController(context);
                 break;
             case ABOUT:
             String message = "<html><body style='width: 400px; padding: 10px;'>" +
                             "<h2 style='color: #2e7d32;'>Monke Adventures</h2>" +
                             "<p>Помогите обезьянке выжить!</p>" +
-                            "<p>Бедная бибизянка попала зашла в чужой район и ей нужно победить остальных " +
+                            "<p>Бедная бибизянка зашла в чужой район и ей нужно победить остальных " +
                             "бибизян чтобы выжить и вернуться к своей семье. " +
                             "Благо она нашла посох монаха которым она сможет защититься</p>" +
                             "<hr>" +

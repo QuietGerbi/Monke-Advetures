@@ -37,7 +37,8 @@ public class SoundPad {
         musicThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 if (isMuted) {
-                    try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+                    try { Thread.sleep(500); }
+                    catch (InterruptedException _) {}
                     continue;
                 }
 
@@ -99,7 +100,7 @@ public class SoundPad {
         if (currentPlayer != null) {
             try {
                 currentPlayer.close();
-            } catch (Exception ignored) {}
+            } catch (Exception _) {}
             currentPlayer = null;
         }
     }

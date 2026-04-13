@@ -11,6 +11,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+
+import static ru.nsu.ccfit.alarkhipov.monkeadventures.controller.swing.GameController.isColliding;
 
 public class GameController {
     private static final Logger log = LogManager.getLogger(GameController.class);
@@ -43,6 +46,7 @@ public class GameController {
     }
 
     private void startGameLoop() {
+        view.printTitle();
         while (isRunning) {
             try {
                 startEnemySpawning();
@@ -182,14 +186,6 @@ public class GameController {
         }
     }
 
-    public static boolean isColliding(Player p, Enemy e) {
-        float dx = p.getX() - e.getX();
-        float dy = p.getY() - e.getY();
-        float distance = (float) Math.hypot(dx, dy);
-
-        return distance < (p.getHitboxRadius() + e.getHitboxRadius());
-    }
-
 
     private void handlePlayerDeath() {
         long elapsedSeconds = (System.currentTimeMillis() - gameStartTime) / 1000;
@@ -247,14 +243,33 @@ public class GameController {
         boolean moved = false;
 
         try {
-            char input = (char) System.in.read();
-            switch (Character.toLowerCase(input)) {
-                case 'w' -> { newY -= speed; moved = true; }
-                case 's' -> { newY += speed; moved = true; }
-                case 'a' -> { newX -= speed; moved = true; }
-                case 'd' -> { newX += speed; moved = true; }
-                case 'b' -> spawnBoss();
-                case 'q' -> {
+            Scanner in = new Scanner(System.in);
+            String input = in.nextLine();
+            switch (input.toLowerCase()) {
+                case "about" -> {
+                    String message = """
+                            Monke Adventures\n
+                            Помогите обезьянке выжить!\n
+                            Бедная бибизянка зашла в чужой район и ей нужно победить остальных \n
+                            бибизян чтобы выжить и вернуться к своей семье. \n
+                            Благо она нашла посох монаха которым она сможет защититься\n
+                            Управление:\n
+                            • WASD / Стрелки — Движение\n
+                            • B — Вызвать босса (если смелый)\n
+                            """;
+                    System.out.println(message);
+                }
+                case "scores" -> {
+                    ScoreManager sm = new ScoreManager();
+                    String best = sm.getBestTimeFormatted();
+                    System.out.println("Ваш рекорд выживания: " + best);
+                }
+                case "w" -> { newY -= speed; moved = true; }
+                case "s" -> { newY += speed; moved = true; }
+                case "a" -> { newX -= speed; moved = true; }
+                case "d" -> { newX += speed; moved = true; }
+                case "b" -> spawnBoss();
+                case "q" -> {
                     System.out.println("Выход из игры.");
                     System.exit(0);
                 }
@@ -263,7 +278,7 @@ public class GameController {
                 player.setPosition(newX, newY);
             }
 
-        } catch (Exception e) {
+        } catch (Exception _) {
             log.info("Input error");
         }
     }

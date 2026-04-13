@@ -1,10 +1,14 @@
 package ru.nsu.ccfit.alarkhipov.monkeadventures;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 public class ScoreManager {
     private static final String BEST_TIME_KEY = "best_time_seconds";
+    private static final Logger log = LogManager.getLogger(ScoreManager.class);
     private final Preferences prefs = Preferences.userNodeForPackage(ScoreManager.class);
 
     public void saveIfHigher(long currentSeconds) {
@@ -14,8 +18,8 @@ public class ScoreManager {
         }
         try {
             prefs.flush();
-        } catch (BackingStoreException e) {
-            //
+        } catch (BackingStoreException _) {
+            log.info("Something went wrong with saving stats of the game");
         }
     }
 

@@ -22,6 +22,14 @@ public abstract class Weapon {
 
     public abstract void attack(Player player, List<Enemy> enemies);
 
+    protected void resetCooldown() {
+        lastAttackTime = System.currentTimeMillis();
+    }
+
+    protected boolean isReady() {
+        return System.currentTimeMillis() - lastAttackTime >= cooldown * 1000;
+    }
+
     public String getName() { return name; }
     public int getDamage() { return damage; }
     public float getRadius() { return radius; }
@@ -30,15 +38,6 @@ public abstract class Weapon {
         this.radius = radius;
     }
     public long getLastAttackTime() { return lastAttackTime; }
-
-    protected boolean isReady() {
-        return System.currentTimeMillis() - lastAttackTime >= cooldown * 1000;
-    }
-
-    protected void resetCooldown() {
-        lastAttackTime = System.currentTimeMillis();
-    }
-
     public void setDamage(int damage) {
         this.damage = damage;
     }

@@ -92,7 +92,6 @@ public class WorldSwing extends JPanel {
         if (enemySwing != null && enemySwings.contains(enemySwing)) {
             remove(enemySwing);
             enemySwings.remove(enemySwing);
-            revalidate();
             repaint();
         }
     }

@@ -94,7 +94,7 @@ public class GameController implements KeyListener {
                 if (sleepTime > 0) {
                     try {
                         Thread.sleep(sleepTime / 1_000_000);
-                    } catch (InterruptedException ignored) {
+                    } catch (InterruptedException _) {
                         Thread.currentThread().interrupt();
                         log.info("Thread was interrupted");
                     }
@@ -179,9 +179,7 @@ public class GameController implements KeyListener {
         });
 
         Timer bossTimer = new Timer(2100000, e -> {
-            if (!bossSpawned) {
-                spawnBoss();
-            }
+            spawnBoss();
         });
 
         difficultyTimer.start();
@@ -309,11 +307,10 @@ public class GameController implements KeyListener {
 
     private void handlePlayerDeath() {
         soundPad.stopAll();
+        long elapsedSeconds = (System.currentTimeMillis() - gameStartTime) / 1000;
+        ScoreManager sm = new ScoreManager();
+        sm.saveIfHigher(elapsedSeconds);
         SwingUtilities.invokeLater(() -> {
-            long elapsedSeconds = (System.currentTimeMillis() - gameStartTime) / 1000;
-            ScoreManager sm = new ScoreManager();
-            sm.saveIfHigher(elapsedSeconds);
-
             String message = "Вы погибли!\n\n" +
                     "Ваш уровень: " + player.getLevel() + "\n" +
                     "Время выживания: " + getGameTimeString() + "\n" +
