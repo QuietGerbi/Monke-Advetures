@@ -1,8 +1,11 @@
 #                                                     🐒 Monke Adventures
+![monke](https://github.com/user-attachments/assets/f3622b94-89d0-49fe-980d-8e1f83ff9e75)
 
 <p align="center">
   <img width="400" alt="AppIcon" src="https://github.com/user-attachments/assets/5d36a33c-d934-4d15-8433-0b3e9646dd35" />
 </p>
+
+![monke](https://github.com/user-attachments/assets/d4d32c2c-ef18-4272-9447-958af84dc558)
 
 ---
 
