@@ -1,8 +1,8 @@
 #                                                     🐒 Monke Adventures
 <p align="center">
-  <img width="400" alt="AppIcon" src="https://github.com/user-attachments/assets/0f4d4395-2262-4a4a-b692-6293928e36ec" />
+  <img width="200" alt="AppIcon" src="https://github.com/user-attachments/assets/0f4d4395-2262-4a4a-b692-6293928e36ec" />
   <img width="400" alt="AppIcon" src="https://github.com/user-attachments/assets/5d36a33c-d934-4d15-8433-0b3e9646dd35" />
-  <img width="400" alt="AppIcon" src="https://github.com/user-attachments/assets/0f4d4395-2262-4a4a-b692-6293928e36ec" />
+  <img width="200" alt="AppIcon" src="https://github.com/user-attachments/assets/0f4d4395-2262-4a4a-b692-6293928e36ec" />
 </p>
 
 ---
