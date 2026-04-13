@@ -15,11 +15,3 @@ Monke Adventures — это динамичный 2D-экшен, разработ
     Кроссплатформенность: игра доступна для Windows, macOS и Linux в виде готовых инсталляторов.
 
     Открытось: игра распространяется свободно, открыта для модификаций и является свободным ПО.
-
-Music by:
-KOHTA YAMAMOTO,
-TheFatRat,
-Yi Jian Mei,
-Kevin MacLeod,
-Jamie Christopherson,
-Lind Erebos
